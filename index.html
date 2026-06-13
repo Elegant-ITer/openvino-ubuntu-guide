@@ -1,0 +1,719 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ubuntu 下 OpenVINO 安装测试</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f6f8fb;
+      --panel: #ffffff;
+      --ink: #172033;
+      --muted: #637083;
+      --line: #d9e0ea;
+      --accent: #0f766e;
+      --accent-2: #2563eb;
+      --code-bg: #111827;
+      --code-fg: #e5edf7;
+      --soft: #eef7f6;
+      --warn: #fff7ed;
+      --warn-line: #fed7aa;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+      line-height: 1.65;
+    }
+
+    header {
+      background: linear-gradient(135deg, #0f766e 0%, #1d4ed8 100%);
+      color: #fff;
+      padding: 48px 24px 36px;
+    }
+
+    .wrap {
+      width: min(1120px, calc(100% - 32px));
+      margin: 0 auto;
+    }
+
+    h1 {
+      margin: 0 0 12px;
+      font-size: clamp(30px, 5vw, 52px);
+      line-height: 1.12;
+      letter-spacing: 0;
+    }
+
+    header p {
+      margin: 0;
+      max-width: 880px;
+      color: rgba(255, 255, 255, .9);
+      font-size: 18px;
+    }
+
+    main {
+      padding: 28px 0 48px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 280px minmax(0, 1fr);
+      gap: 24px;
+      align-items: start;
+    }
+
+    nav {
+      position: sticky;
+      top: 16px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 16px;
+    }
+
+    nav strong {
+      display: block;
+      margin-bottom: 10px;
+      font-size: 15px;
+    }
+
+    nav a {
+      display: block;
+      padding: 7px 8px;
+      border-radius: 6px;
+      color: #29415d;
+      text-decoration: none;
+      font-size: 14px;
+    }
+
+    nav a:hover {
+      background: var(--soft);
+      color: var(--accent);
+    }
+
+    section {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 24px;
+      margin-bottom: 18px;
+    }
+
+    h2 {
+      margin: 0 0 10px;
+      font-size: 24px;
+      line-height: 1.3;
+      letter-spacing: 0;
+    }
+
+    h3 {
+      margin: 22px 0 8px;
+      font-size: 18px;
+      letter-spacing: 0;
+    }
+
+    p {
+      margin: 8px 0 14px;
+    }
+
+    .note,
+    .warning,
+    .ok {
+      border-radius: 8px;
+      padding: 12px 14px;
+      margin: 14px 0;
+      border: 1px solid var(--line);
+      color: #26384d;
+    }
+
+    .note {
+      background: #eef7ff;
+      border-color: #bfdbfe;
+    }
+
+    .warning {
+      background: var(--warn);
+      border-color: var(--warn-line);
+    }
+
+    .ok {
+      background: var(--soft);
+      border-color: #99f6e4;
+    }
+
+    .code-block {
+      margin: 14px 0 18px;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid #243044;
+      background: var(--code-bg);
+    }
+
+    .code-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 9px 10px 9px 14px;
+      background: #1f2937;
+      color: #cbd5e1;
+      font-size: 13px;
+    }
+
+    button.copy {
+      appearance: none;
+      border: 1px solid #4b5563;
+      background: #0f172a;
+      color: #f8fafc;
+      border-radius: 6px;
+      padding: 5px 10px;
+      font: inherit;
+      font-size: 13px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    button.copy:hover {
+      border-color: #38bdf8;
+    }
+
+    pre {
+      margin: 0;
+      padding: 16px;
+      overflow-x: auto;
+      color: var(--code-fg);
+      font: 14px/1.55 Consolas, "Cascadia Mono", "SFMono-Regular", monospace;
+      tab-size: 2;
+    }
+
+    code {
+      font-family: Consolas, "Cascadia Mono", "SFMono-Regular", monospace;
+    }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 30px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, .15);
+      border: 1px solid rgba(255, 255, 255, .25);
+      color: #fff;
+      font-size: 14px;
+    }
+
+    .checklist {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .checklist div {
+      background: #f8fafc;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px 12px;
+    }
+
+    footer {
+      color: var(--muted);
+      padding: 0 0 40px;
+      text-align: center;
+      font-size: 14px;
+    }
+
+    @media (max-width: 900px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      nav {
+        position: static;
+      }
+
+      .checklist {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <h1>Ubuntu 下 OpenVINO 安装测试</h1>
+      <p>适用于 Ubuntu 24.04，硬件平台 Core i9-14900K + Intel Arc Pro B60；同样适用于 PTL 的 iGPU。页面内所有命令块均可一键复制。</p>
+      <div class="meta">
+        <span class="pill">Ubuntu 24.04</span>
+        <span class="pill">OpenVINO / OpenVINO GenAI</span>
+        <span class="pill">Intel GPU / Level Zero</span>
+        <span class="pill">Conda + Python 3.10</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap layout">
+    <nav aria-label="页面目录">
+      <strong>目录</strong>
+      <a href="#system">1. 更新系统与内核</a>
+      <a href="#miniconda">2. 安装 Miniconda</a>
+      <a href="#conda">3. Conda 换源与环境</a>
+      <a href="#gpu-driver">4. 安装 Intel GPU 驱动</a>
+      <a href="#pip">5. pip 换源</a>
+      <a href="#openvino">6. 安装 OpenVINO</a>
+      <a href="#verify">7. 验证设备与环境</a>
+      <a href="#models">8. 下载与转换模型</a>
+      <a href="#genai">9. GenAI 推理测试</a>
+      <a href="#benchmark">10. Benchmark 测试</a>
+      <a href="#vlm">11. VLM Benchmark</a>
+    </nav>
+
+    <div>
+      <section id="system">
+        <h2>1. 更新系统与升级内核</h2>
+        <p>安装好 Ubuntu 24.04 后先更新源。安装时如果已经选择清华源，可以直接执行：</p>
+        <div class="code-block">
+          <div class="code-title"><span>更新系统</span><button class="copy" type="button">复制</button></div>
+          <pre><code class="language-bash">sudo apt update
+sudo apt upgrade</code></pre>
+        </div>
+
+        <p>升级内核很重要，否则可能识别不到 Level Zero Device。</p>
+        <div class="code-block">
+          <div class="code-title"><span>升级 HWE 内核并重启</span><button class="copy" type="button">复制</button></div>
+          <pre><code class="language-bash">sudo apt install linux-generic-hwe-24.04
+uname -r
+sudo modprobe i915
+sudo reboot</code></pre>
+        </div>
+      </section>
+
+      <section id="miniconda">
+        <h2>2. 下载并安装 Miniconda</h2>
+        <p>可以从官方源下载；如果下载较慢，可改用清华源。</p>
+        <div class="code-block">
+          <div class="code-title"><span>下载 Miniconda</span><button class="copy" type="button">复制</button></div>
+          <pre><code class="language-bash">wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+wget https://mirrors.tuna.tsinghua.edu.cn/anaconda/miniconda/Miniconda3-latest-Linux-x86_64.sh</code></pre>
+        </div>
+
+        <p>网络不稳定时，可以使用断点续传：</p>
+        <div class="code-block">
+          <div class="code-title"><span>断点续传下载</span><button class="copy" type="button">复制</button></div>
+          <pre><code class="language-bash">wget -c https://mirrors.tuna.tsinghua.edu.cn/anaconda/miniconda/Miniconda3-latest-Linux-x86_64.sh</code></pre>
+        </div>
+
+        <p>也可以简单验证源的下载速度：</p>
+        <div class="code-block">
+          <div class="code-title"><span>验证下载速度</span><button class="copy" type="button">复制</button></div>
+          <pre><code class="language-bash">wget -c https://mirrors.tuna.tsinghua.edu.cn/anaconda/miniconda/</code></pre>
+        </div>
+
+        <div class="code-block">
+          <div class="code-title"><span>安装 Miniconda</span><button class="copy" type="button">复制</button></div>
+          <pre><code class="language-bash">bash Miniconda3-latest-Linux-x86_64.sh
+source .bashrc</code></pre>
+        </div>
+
+        <p>如果不想每次打开终端都自动进入 <code>base</code> 环境：</p>
+        <div class="code-block">
+          <div class="code-title"><span>关闭自动进入 base</span><button class="copy" type="button">复制</button></div>
+          <pre><code class="language-bash">conda config --set auto_activate_base false</code></pre>
+        </div>
+      </section>
+
+      <section id="conda">
+        <h2>3. Conda 换国内源并创建环境</h2>
+        <div class="code-block">
+          <div class="code-title"><span>配置 Conda 清华源</span><button class="copy" type="button">复制</button></div>
+          <pre><code class="language-bash">conda config --remove-key channels
+conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/conda-forge
+conda config --add channels https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main
+conda config --set show_channel_urls yes
+conda config --set channel_priority strict</code></pre>
+        </div>
+
+        <div class="code-block">
+          <div class="code-title"><span>验证 Conda 源</span><button class="copy" type="button">复制</button></div>
+          <pre><code class="language-bash">conda config --show channels</code></pre>
+        </div>
+
+        <p>建议使用 Python 3.10 创建 OpenVINO 环境。</p>
+        <div class="code-block">
+          <div class="code-title"><span>创建并进入 openvino_env</span><button class="copy" type="button">复制</button></div>
+          <pre><code class="language-bash">conda create -n openvino_env python=3.10 -y
+conda env list
+conda activate openvino_env</code></pre>
+        </div>
+        <div class="ok">执行 <code>conda env list</code> 后，应能看到 <code>openvino_env</code>。</div>
+      </section>
+
+      <section id="gpu-driver">
+        <h2>4. 安装 Intel GPU 驱动</h2>
+        <p>先创建安装脚本：</p>
+        <div class="code-block">
+          <div class="code-title"><span>新建脚本文件</span><button class="copy" type="button">复制</button></div>
+          <pre><code class="language-bash">nano intel-gpu-installer-no-proxy.sh</code></pre>
+        </div>
+
+        <p>将下面内容写入脚本：</p>
+        <div class="code-block">
+          <div class="code-title"><span>intel-gpu-installer-no-proxy.sh</span><button class="copy" type="button">复制</button></div>
+          <pre><code class="language-bash">#!/bin/bash
+
+sudo apt-get update
+sudo apt-get install -y software-properties-common
+
+sudo add-apt-repository -y ppa:kobuk-team/intel-graphics
+
+sudo apt-get update
+sudo apt-get install -y \
+    libze-intel-gpu1 libze1 intel-metrics-discovery intel-opencl-icd clinfo intel-gsc
+
+sudo apt-get install -y \
+    intel-media-va-driver-non-free libmfx-gen1 libvpl2 libvpl-tools libva-glx2 va-driver-all vainfo
+
+sudo apt-get install -y \
+    libze-dev intel-ocloc
+
+sudo apt-get install -y \
+    libze-intel-gpu-raytracing xpu-smi
+
+sudo gpasswd -a ${USER} render
+newgrp render
+
+sleep 3
+
+echo "Run: clinfo | grep \"Device Name\""
+clinfo | grep "Device Name"</code></pre>
+        </div>
+
+        <p>运行脚本，然后补充 <code>/dev/dri</code> 相关权限并重启。</p>
+        <div class="code-block">
+          <div class="code-title"><span>运行驱动安装脚本</span><button class="copy" type="button">复制</button></div>
+          <pre><code class="language-bash">bash intel-gpu-installer-no-proxy.sh
+sudo usermod -aG render $USER
+sudo usermod -aG video $USER
+sudo reboot</code></pre>
+        </div>
+      </section>
+
+      <section id="pip">
+        <h2>5. 永久修改 pip 源</h2>
+        <div class="code-block">
+          <div class="code-title"><span>创建 pip 配置文件</span><button class="copy" type="button">复制</button></div>
+          <pre><code class="language-bash">mkdir -p ~/.pip
+nano ~/.pip/pip.conf</code></pre>
+        </div>
+
+        <div class="code-block">
+          <div class="code-title"><span>pip.conf 内容</span><button class="copy" type="button">复制</button></div>
+          <pre><code>[global]
+index-url = https://pypi.tuna.tsinghua.edu.cn/simple
+timeout = 60</code></pre>
+        </div>
+
+        <div class="code-block">
+          <div class="code-title"><span>验证 pip 源</span><button class="copy" type="button">复制</button></div>
+          <pre><code class="language-bash">pip config list</code></pre>
+        </div>
+
+        <p>预期可看到类似输出：</p>
+        <div class="code-block">
+          <div class="code-title"><span>示例输出</span><button class="copy" type="button">复制</button></div>
+          <pre><code>global.index-url='https://pypi.tuna.tsinghua.edu.cn/simple'</code></pre>
+        </div>
+      </section>
+
+      <section id="openvino">
+        <h2>6. 安装 OpenVINO 相关组件</h2>
+        <p><code>-i</code> 参数表示临时使用国内 PyPI 源。</p>
+        <div class="code-block">
+          <div class="code-title"><span>安装基础包</span><button class="copy" type="button">复制</button></div>
+          <pre><code class="language-bash">pip install --upgrade pip setuptools wheel -i https://pypi.tuna.tsinghua.edu.cn/simple
+pip install openvino -i https://pypi.tuna.tsinghua.edu.cn/simple
+pip install openvino-genai -i https://pypi.tuna.tsinghua.edu.cn/simple
+pip install modelscope -i https://pypi.tuna.tsinghua.edu.cn/simple</code></pre>
+        </div>
+
+        <p>如果要用 OpenVINO 跑 LLM，还需要安装 <code>optimum</code> 与 <code>transformers</code>。</p>
+        <div class="code-block">
+          <div class="code-title"><span>安装 LLM 依赖</span><button class="copy" type="button">复制</button></div>
+          <pre><code class="language-bash">pip install optimum[openvino] transformers -i https://pypi.tuna.tsinghua.edu.cn/simple</code></pre>
+        </div>
+
+        <p>完整开发依赖可选安装：</p>
+        <div class="code-block">
+          <div class="code-title"><span>安装开发依赖，可选</span><button class="copy" type="button">复制</button></div>
+          <pre><code class="language-bash">pip install openvino-dev -i https://pypi.tuna.tsinghua.edu.cn/simple</code></pre>
+        </div>
+
+        <p>ONNX / PyTorch 支持也是可选项，通常用于从其他模型格式转换。</p>
+        <div class="code-block">
+          <div class="code-title"><span>安装 ONNX 与 PyTorch，可选</span><button class="copy" type="button">复制</button></div>
+          <pre><code class="language-bash">pip install onnx -i https://pypi.tuna.tsinghua.edu.cn/simple
+pip install torch torchvision -i https://pypi.tuna.tsinghua.edu.cn/simple</code></pre>
+        </div>
+      </section>
+
+      <section id="verify">
+        <h2>7. 验证 OpenVINO 与 GPU 环境</h2>
+        <div class="code-block">
+          <div class="code-title"><span>验证 OpenVINO 版本</span><button class="copy" type="button">复制</button></div>
+          <pre><code class="language-bash">python -c "import openvino; print(openvino.__version__)"</code></pre>
+        </div>
+
+        <div class="code-block">
+          <div class="code-title"><span>验证 OpenVINO 可用设备</span><button class="copy" type="button">复制</button></div>
+          <pre><code class="language-bash">python - &lt;&lt;EOF
+import openvino as ov
+core = ov.Core()
+print("Available devices:", core.available_devices)
+EOF</code></pre>
+        </div>
+        <div class="ok">正常情况下应显示：<code>Available devices: ['CPU', 'GPU']</code>。</div>
+
+        <div class="code-block">
+          <div class="code-title"><span>验证 Level Zero / GPU 设备</span><button class="copy" type="button">复制</button></div>
+          <pre><code class="language-bash">ls /dev/dri
+clinfo | grep Device
+xpu-smi discovery
+uname -r</code></pre>
+        </div>
+
+        <p>示例输出节选：</p>
+        <div class="code-block">
+          <div class="code-title"><span>设备识别示例输出</span><button class="copy" type="button">复制</button></div>
+          <pre><code>by-path  card0  renderD128
+Device Name                                     Intel(R) Arc(TM) Pro B60 Graphics
+Device Vendor                                   Intel(R) Corporation
+Device Type                                     GPU
+Device PCI bus info (KHR)                       PCI-E, 0000:03:00.0
+
++-----------+--------------------------------------------------------------------------------------+
+| Device ID | Device Information                                                                   |
++-----------+--------------------------------------------------------------------------------------+
+| 0         | Device Name: Intel(R) Arc(TM) Pro B60 Graphics                                       |
+|           | Vendor Name: Intel(R) Corporation                                                    |
+|           | PCI BDF Address: 0000:03:00.0                                                        |
+|           | DRM Device: /dev/dri/card0                                                           |
++-----------+--------------------------------------------------------------------------------------+
+6.17.0-35-generic</code></pre>
+        </div>
+
+        <div class="code-block">
+          <div class="code-title"><span>查看设备完整名称</span><button class="copy" type="button">复制</button></div>
+          <pre><code class="language-bash">python - &lt;&lt;EOF
+import openvino as ov
+
+core = ov.Core()
+for d in core.available_devices:
+    print(d, core.get_property(d, "FULL_DEVICE_NAME"))
+EOF</code></pre>
+        </div>
+
+        <p>预期类似输出：</p>
+        <div class="code-block">
+          <div class="code-title"><span>设备名称示例输出</span><button class="copy" type="button">复制</button></div>
+          <pre><code>CPU Intel(R) Core(TM) i9-14900K
+GPU Intel(R) Arc(TM) Pro B60 Graphics (dGPU)</code></pre>
+        </div>
+
+        <div class="code-block">
+          <div class="code-title"><span>查看 GPU 状态</span><button class="copy" type="button">复制</button></div>
+          <pre><code class="language-bash">sudo xpu-smi stats -d 0</code></pre>
+        </div>
+
+        <div class="code-block">
+          <div class="code-title"><span>持续查看 GPU 资源占用率</span><button class="copy" type="button">复制</button></div>
+          <pre><code class="language-bash">sudo watch -n 1 xpu-smi stats -d 0</code></pre>
+        </div>
+      </section>
+
+      <section id="models">
+        <h2>8. 下载与转换模型</h2>
+        <p>安装 Hugging Face CLI：</p>
+        <div class="code-block">
+          <div class="code-title"><span>安装 hf 命令</span><button class="copy" type="button">复制</button></div>
+          <pre><code class="language-bash">pip install hf</code></pre>
+        </div>
+
+        <p>下载 Hugging Face 原始模型。设置国内镜像后下载，后续需要自行转换，模型体积较大。</p>
+        <div class="code-block">
+          <div class="code-title"><span>下载 HF 原始模型</span><button class="copy" type="button">复制</button></div>
+          <pre><code class="language-bash">export HF_ENDPOINT=https://hf-mirror.com
+hf download Qwen/Qwen3.6-35B-A3B --local-dir ./models/Qwen3.6-35B-A3B --resume-download</code></pre>
+        </div>
+
+        <p>也可以直接下载适合 OpenVINO 的 int4 模型：</p>
+        <div class="code-block">
+          <div class="code-title"><span>下载 OpenVINO int4 模型</span><button class="copy" type="button">复制</button></div>
+          <pre><code class="language-bash">export HF_ENDPOINT=https://hf-mirror.com
+hf download OpenVINO/Qwen3.6-35B-A3B-ov --local-dir ./models/Qwen3.6-35B-A3B-ov --resume-download</code></pre>
+        </div>
+
+        <p>如果从 ModelScope 下载：</p>
+        <div class="code-block">
+          <div class="code-title"><span>ModelScope 下载</span><button class="copy" type="button">复制</button></div>
+          <pre><code class="language-bash">modelscope download --model OpenVINO/Qwen3.6-35B-A3B-ov --local_dir ./models/Qwen3.6-35B-A3B-int4-ov</code></pre>
+        </div>
+
+        <p>如果自己下载 HF 模型后再转换，可能缺少依赖；按需安装即可。</p>
+        <div class="code-block">
+          <div class="code-title"><span>补充转换依赖</span><button class="copy" type="button">复制</button></div>
+          <pre><code class="language-bash">pip install datasets -i https://pypi.tuna.tsinghua.edu.cn/simple</code></pre>
+        </div>
+
+        <p>以 Qwen2.5-1.5B-Instruct 为例转换模型：</p>
+        <div class="code-block">
+          <div class="code-title"><span>转换为 OpenVINO int4</span><button class="copy" type="button">复制</button></div>
+          <pre><code class="language-bash">optimum-cli export --model Qwen/Qwen2.5-1.5B-Instruct --weight-format int4 --task text-generation-with-past ./qwen2.5-1.5b-ov</code></pre>
+        </div>
+      </section>
+
+      <section id="genai">
+        <h2>9. OpenVINO GenAI 推理测试</h2>
+        <p>模型下载完成后，可以进入 Python 交互环境测试推理。</p>
+        <div class="code-block">
+          <div class="code-title"><span>进入 Python</span><button class="copy" type="button">复制</button></div>
+          <pre><code class="language-bash">python</code></pre>
+        </div>
+
+        <div class="code-block">
+          <div class="code-title"><span>Python 推理代码</span><button class="copy" type="button">复制</button></div>
+          <pre><code class="language-python">import openvino_genai as ov_genai
+pipe = ov_genai.LLMPipeline("./models/qwen3-8b-int4-ov", "GPU")
+prompt = "解释一下混合专家模型的工作原理"
+result = pipe.generate(prompt, max_new_tokens=1024)
+print(result)</code></pre>
+        </div>
+      </section>
+
+      <section id="benchmark">
+        <h2>10. 获取 Benchmark 工具并测试 LLM</h2>
+        <div class="code-block">
+          <div class="code-title"><span>获取 OpenVINO Benchmark 工具</span><button class="copy" type="button">复制</button></div>
+          <pre><code class="language-bash">git clone --depth 1 https://gitee.com/openvinotoolkit-prc/openvino.genai.git
+cd ./openvino.genai/tools/llm_bench
+pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple</code></pre>
+        </div>
+
+        <p>如果缺少 <code>torch</code>：</p>
+        <div class="code-block">
+          <div class="code-title"><span>安装 torch</span><button class="copy" type="button">复制</button></div>
+          <pre><code class="language-bash">pip install torch -i https://pypi.tuna.tsinghua.edu.cn/simple</code></pre>
+        </div>
+
+        <div class="code-block">
+          <div class="code-title"><span>LLM Benchmark 测试</span><button class="copy" type="button">复制</button></div>
+          <pre><code class="language-bash">cd ~
+PROMPT="$(cat ~/prompt_1_1Kin_512out_r1.txt)"
+python ./openvino.genai/tools/llm_bench/benchmark.py \
+  -m ./models/qwen3-8b-int4-ov/ \
+  -d GPU \
+  -n 5 \
+  -ic 512 \
+  -p "$PROMPT"</code></pre>
+        </div>
+
+        <p>测试结果示例：</p>
+        <div class="code-block">
+          <div class="code-title"><span>LLM Benchmark 示例输出</span><button class="copy" type="button">复制</button></div>
+          <pre><code>[ INFO ] [Average] P[0] Input token size: 1012, 1st token latency: 163.66 ms, 2nd token latency: 14.62 ms/token, 2nd tokens throughput: 68.40 tokens/s</code></pre>
+        </div>
+      </section>
+
+      <section id="vlm">
+        <h2>11. VLM Benchmark 测试</h2>
+        <div class="note">1024 token prompt 路径示例：<code>~/openvino/prompt_1_1Kin_512out_r1.txt</code></div>
+        <p>修改过的 <code>benchmark_vlm_new.py</code> 下载地址：</p>
+        <div class="code-block">
+          <div class="code-title"><span>参考地址</span><button class="copy" type="button">复制</button></div>
+          <pre><code>https://github.com/KiwiHana/OV.genai/blob/main/benchmark_vlm_new.py</code></pre>
+        </div>
+
+        <div class="code-block">
+          <div class="code-title"><span>VLM Benchmark 测试</span><button class="copy" type="button">复制</button></div>
+          <pre><code class="language-bash">cd ~/openvino/openvino.genai/samples/python/visual_language_chat
+python benchmark_vlm_new.py \
+  -m ~/openvino/models/qwen3.6-35b-a3b-ov \
+  -d GPU \
+  -n 5 \
+  -pf ~/openvino/prompt_1_1Kin_512out_r1.txt \
+  -mt 512</code></pre>
+        </div>
+
+        <p>测试结果示例：</p>
+        <div class="code-block">
+          <div class="code-title"><span>VLM Benchmark 示例输出</span><button class="copy" type="button">复制</button></div>
+          <pre><code>openvino runtime version: 2026.2.0-21903-52ddc073857-releases/2026/2, genai version: 2026.2.0.0-3121-adf73e80e66
+Number of images:0, Prompt token size: 1024
+Output token size: 512
+Load time: 10112.00 ms
+Generate time: 5966.85 ± 22.53 ms
+Tokenization time: 0.74 ± 0.04 ms
+Detokenization time: 0.31 ± 0.02 ms
+Embeddings preparation time: 36.35 ± 0.00 ms
+TTFT: 451.59 ± 1.71 ms
+TPOT: 10.79 ± 1.91 ms
+Throughput : 92.67 ± 16.37 tokens/s</code></pre>
+        </div>
+
+        <div class="checklist">
+          <div><strong>安装链路</strong><br>系统更新、内核、Conda、GPU 驱动、pip 源。</div>
+          <div><strong>验证链路</strong><br>OpenVINO 版本、CPU/GPU 可见性、Level Zero、xpu-smi。</div>
+          <div><strong>模型链路</strong><br>HF / ModelScope 下载、OpenVINO int4 模型、手动转换。</div>
+          <div><strong>测试链路</strong><br>GenAI 推理、LLM Benchmark、VLM Benchmark。</div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer>
+    <div class="wrap">整理自 Ubuntu 24.04 下 OpenVINO 安装与测试笔记。</div>
+  </footer>
+
+  <script>
+    document.querySelectorAll(".code-block").forEach((block) => {
+      const button = block.querySelector("button.copy");
+      const code = block.querySelector("code");
+      if (!button || !code) return;
+
+      button.addEventListener("click", async () => {
+        const text = code.innerText.replace(/\n$/, "");
+        try {
+          await navigator.clipboard.writeText(text);
+          button.textContent = "已复制";
+          setTimeout(() => {
+            button.textContent = "复制";
+          }, 1400);
+        } catch (error) {
+          const range = document.createRange();
+          range.selectNodeContents(code);
+          const selection = window.getSelection();
+          selection.removeAllRanges();
+          selection.addRange(range);
+          button.textContent = "已选中";
+          setTimeout(() => {
+            button.textContent = "复制";
+          }, 1400);
+        }
+      });
+    });
+  </script>
+</body>
+</html>
